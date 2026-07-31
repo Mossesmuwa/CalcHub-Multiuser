@@ -1,16 +1,24 @@
-function Logo({ size = 'normal' }) {
+function Logo({ withWordmark = true }) {
   return (
     <div className="logo">
-      <div className="logo-mark">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="2" width="18" height="20" rx="4" fill="white" fillOpacity="0.15" />
-          <circle cx="8" cy="8" r="1.6" fill="white" />
-          <circle cx="12" cy="8" r="1.6" fill="white" />
-          <circle cx="16" cy="8" r="1.6" fill="white" />
-          <path d="M8 14h8M8 18h5" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-      </div>
-      {size === 'normal' && <span>CalcHub</span>}
+      <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
+        <defs>
+          <linearGradient id="logoGradient" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#7C5CFF" />
+            <stop offset="1" stopColor="#22D3EE" />
+          </linearGradient>
+        </defs>
+        <rect width="40" height="40" rx="12" fill="url(#logoGradient)" />
+        <rect x="9" y="8" width="22" height="9" rx="3" fill="white" fillOpacity="0.92" />
+        <path d="M12.5 12.5h4M22 12.5h4" stroke="#7C5CFF" strokeWidth="1.6" strokeLinecap="round" />
+        <circle cx="13" cy="23" r="2" fill="white" />
+        <circle cx="20" cy="23" r="2" fill="white" />
+        <circle cx="27" cy="23" r="2" fill="white" />
+        <circle cx="13" cy="30" r="2" fill="white" />
+        <circle cx="20" cy="30" r="2" fill="white" />
+        <rect x="24" y="28" width="6" height="4" rx="1.5" fill="white" />
+      </svg>
+      {withWordmark && <span>CalcHub</span>}
     </div>
   );
 }

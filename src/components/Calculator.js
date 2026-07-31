@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
+import { BackspaceIcon } from './Icons';
 
 function Calculator({ user, onSaved }) {
   const [expression, setExpression] = useState('');
@@ -99,7 +100,7 @@ function Calculator({ user, onSaved }) {
     ['7', '8', '9', '*'],
     ['4', '5', '6', '-'],
     ['1', '2', '3', '+'],
-    ['0', '.', '⌫', '='],
+    ['0', '.', 'back', '='],
   ];
 
   const scientificButtons = ['sin(', 'cos(', 'tan(', '√(', 'log(', 'ln(', '^', 'π', '%'];
@@ -142,7 +143,7 @@ function Calculator({ user, onSaved }) {
           const isEquals = b === '=';
           function handleClick() {
             if (b === 'AC') clearAll();
-            else if (b === '⌫') backspace();
+            else if (b === 'back') backspace();
             else if (b === '=') calculate();
             else press(b);
           }
@@ -152,7 +153,7 @@ function Calculator({ user, onSaved }) {
               className={`calc-btn ${isEquals ? 'equals' : isOperator ? 'operator' : ''}`}
               onClick={handleClick}
             >
-              {b}
+              {b === 'back' ? <BackspaceIcon /> : b}
             </button>
           );
         })}

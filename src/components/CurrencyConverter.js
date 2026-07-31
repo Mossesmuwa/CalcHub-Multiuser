@@ -27,25 +27,19 @@ function CurrencyConverter() {
   const result = rate ? (parseFloat(amount) || 0) * rate : null;
 
   return (
-    <div className="card" style={{ padding: 18 }}>
-      <h3 style={{ marginTop: 0, fontSize: 16 }}>Currency Converter</h3>
+    <div className="card converter-card">
+      <h3>Currency Converter</h3>
 
       <div className="converter-row">
-        <input
-          className="history-search"
-          style={{ marginBottom: 0 }}
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
+        <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
         <select value={from} onChange={(e) => setFrom(e.target.value)}>
           {CURRENCIES.map((c) => <option key={c}>{c}</option>)}
         </select>
       </div>
 
       <div className="converter-row">
-        <div className="calc-result" style={{ fontSize: 24 }}>
-          {loading ? '...' : result ? result.toFixed(2) : '—'}
+        <div className="converter-result">
+          {loading ? '···' : result ? result.toFixed(2) : '—'}
         </div>
         <select value={to} onChange={(e) => setTo(e.target.value)}>
           {CURRENCIES.map((c) => <option key={c}>{c}</option>)}

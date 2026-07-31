@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useToast } from '../contexts/ToastContext';
+import { StarIcon, TrashIcon, CopyIcon, SearchIcon } from './Icons';
 
 function History({ user, refreshKey }) {
   const [calculations, setCalculations] = useState([]);
@@ -50,7 +51,7 @@ function History({ user, refreshKey }) {
   }
 
   async function clearAll() {
-    if (!window.confirm('Delete your entire history? This can\'t be undone.')) return;
+    if (!window.confirm("Delete your entire history? This can't be undone.")) return;
     const { error } = await supabase.from('calculations').delete().eq('user_id', user.id);
     if (!error) {
       setCalculations([]);
@@ -67,47 +68,57 @@ function History({ user, refreshKey }) {
     .filter((c) => !showFavoritesOnly || c.is_favorite)
     .filter((c) => c.expression.includes(search) || c.result.includes(search));
 
-  if (loading) return <p className="empty-state">Loading history...</p>;
+  if (loading) return <div className="card empty-state">Loading history...</div>;
 
   return (
-    <div className="card" style={{ padding: 18 }}>
+    <div className="card" style={{ padding: 22 }}>
       <div className="history-header">
-        <h3 style={{ margin: 0, fontSize: 16 }}>History</h3>
+        <h3>History</h3>
         <div className="history-actions">
-          <button onClick={() => setShowFavoritesOnly(!showFavoritesOnly)} className={showFavoritesOnly ? 'active' : ''}>
-            ⭐
+          <button onClick={() => setShowFavoritesOnly(!showFavoritesOnly)} className={showFavoritesOnly ? 'active' : ''} title="Favorites only">
+            <StarIcon filled={showFavoritesOnly} />
           </button>
-          <button onClick={clearAll}>🗑</button>
+          <button onClick={clearAll} title="Clear all">
+            <TrashIcon />
+          </button>
         </div>
       </div>
 
-      <input
-        className="history-search"
-        placeholder="Search your calculations..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      <div className="search-box">
+        <SearchIcon />
+        <input
+          placeholder="Search your calculations..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
-      {visible.length === 0 ? (
-        <p className="empty-state">No calculations match yet.</p>
-      ) : (
-        visible.map((calc) => (
-          <div className="history-item" key={calc.id}>
-            <div className="history-main">
-              <span className="history-expr">{calc.expression}</span>
-              <span className="history-result">= {calc.result}</span>
-              <span className="history-time">{new Date(calc.created_at).toLocaleString()}</span>
+      <div className="history-list">
+        {visible.length === 0 ? (
+          <p className="empty-state">No calculations match yet.</p>
+        ) : (
+          visible.map((calc) => (
+            <div className="history-item" key={calc.id}>
+              <div className="history-main">
+                <span className="history-expr">{calc.expression}</span>
+                <span className="history-result">= {calc.result}</span>
+                <span className="history-time">{new Date(calc.created_at).toLocaleString()}</span>
+              </div>
+              <div className="history-actions">
+                <button onClick={() => toggleFavorite(calc)} className={calc.is_favorite ? 'active' : ''}>
+                  <StarIcon filled={calc.is_favorite} />
+                </button>
+                <button onClick={() => copyResult(calc.result)}>
+                  <CopyIcon />
+                </button>
+                <button onClick={() => deleteOne(calc.id)}>
+                  <TrashIcon />
+                </button>
+              </div>
             </div>
-            <div className="history-actions">
-              <button onClick={() => toggleFavorite(calc)} className={calc.is_favorite ? 'active' : ''}>
-                {calc.is_favorite ? '⭐' : '☆'}
-              </button>
-              <button onClick={() => copyResult(calc.result)}>📋</button>
-              <button onClick={() => deleteOne(calc.id)}>🗑</button>
-            </div>
-          </div>
-        ))
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 }

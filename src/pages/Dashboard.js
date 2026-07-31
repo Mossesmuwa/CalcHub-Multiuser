@@ -7,7 +7,7 @@ import UnitConverter from '../components/UnitConverter';
 import CurrencyConverter from '../components/CurrencyConverter';
 
 function Dashboard({ user }) {
-  const [tab, setTab] = useState('calculator');
+  const [tab, setTab] = useState('history');
   const [refreshKey, setRefreshKey] = useState(0);
   const [stats, setStats] = useState({ total: 0, mostUsed: '—' });
 
@@ -43,39 +43,39 @@ function Dashboard({ user }) {
   return (
     <div className="app-shell">
       <Navbar />
+      <p className="welcome-row">Welcome back, {firstName}</p>
 
-      <p style={{ color: 'var(--text-muted)', marginTop: -8, marginBottom: 16 }}>
-        Welcome back, {firstName}
-      </p>
-
-      <div className="stats-row">
-        <div className="card stat-card">
-          <div className="value">{stats.total}</div>
-          <div className="label">Total calculations</div>
-        </div>
-        <div className="card stat-card">
-          <div className="value">{stats.mostUsed}</div>
-          <div className="label">Most used operator</div>
-        </div>
-      </div>
-
-      <div className="tabs">
-        <button className={`tab ${tab === 'calculator' ? 'active' : ''}`} onClick={() => setTab('calculator')}>Calculator</button>
-        <button className={`tab ${tab === 'history' ? 'active' : ''}`} onClick={() => setTab('history')}>History</button>
-        <button className={`tab ${tab === 'tools' ? 'active' : ''}`} onClick={() => setTab('tools')}>Tools</button>
-      </div>
-
-      {tab === 'calculator' && (
+      <div className="main-grid">
+        {/* left column: the calculator, always visible */}
         <Calculator user={user} onSaved={() => setRefreshKey(refreshKey + 1)} />
-      )}
-      {tab === 'history' && <History user={user} refreshKey={refreshKey} />}
-      {tab === 'tools' && (
-        <>
-          <UnitConverter />
-          <div style={{ height: 14 }} />
-          <CurrencyConverter />
-        </>
-      )}
+
+        {/* right column: stats up top, then history/tools in tabs */}
+        <div className="side-column">
+          <div className="stats-row">
+            <div className="card stat-card">
+              <div className="value">{stats.total}</div>
+              <div className="label">Total calculations</div>
+            </div>
+            <div className="card stat-card">
+              <div className="value">{stats.mostUsed}</div>
+              <div className="label">Most used operator</div>
+            </div>
+          </div>
+
+          <div className="tabs" style={{ marginBottom: 16 }}>
+            <button className={`tab ${tab === 'history' ? 'active' : ''}`} onClick={() => setTab('history')}>History</button>
+            <button className={`tab ${tab === 'tools' ? 'active' : ''}`} onClick={() => setTab('tools')}>Tools</button>
+          </div>
+
+          {tab === 'history' && <History user={user} refreshKey={refreshKey} />}
+          {tab === 'tools' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <UnitConverter />
+              <CurrencyConverter />
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

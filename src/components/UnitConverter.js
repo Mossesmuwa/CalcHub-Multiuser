@@ -15,31 +15,31 @@ function UnitConverter() {
   const units = UNIT_GROUPS[group];
   const converted = ((parseFloat(value) || 0) * units[from]) / units[to];
 
+  function changeGroup(newGroup) {
+    setGroup(newGroup);
+    setFrom(Object.keys(UNIT_GROUPS[newGroup])[0]);
+    setTo(Object.keys(UNIT_GROUPS[newGroup])[1]);
+  }
+
   return (
-    <div className="card" style={{ padding: 18 }}>
-      <h3 style={{ marginTop: 0, fontSize: 16 }}>Unit Converter</h3>
+    <div className="card converter-card">
+      <h3>Unit Converter</h3>
 
       <div className="converter-row">
-        <select value={group} onChange={(e) => { setGroup(e.target.value); setFrom(Object.keys(UNIT_GROUPS[e.target.value])[0]); setTo(Object.keys(UNIT_GROUPS[e.target.value])[1]); }}>
+        <select value={group} onChange={(e) => changeGroup(e.target.value)} style={{ width: '100%' }}>
           {Object.keys(UNIT_GROUPS).map((g) => <option key={g}>{g}</option>)}
         </select>
       </div>
 
       <div className="converter-row">
-        <input
-          className="history-search"
-          style={{ marginBottom: 0 }}
-          type="number"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-        />
+        <input type="number" value={value} onChange={(e) => setValue(e.target.value)} />
         <select value={from} onChange={(e) => setFrom(e.target.value)}>
           {Object.keys(units).map((u) => <option key={u}>{u}</option>)}
         </select>
       </div>
 
       <div className="converter-row">
-        <div className="calc-result" style={{ fontSize: 24 }}>{converted.toFixed(4)}</div>
+        <div className="converter-result">{converted.toFixed(4)}</div>
         <select value={to} onChange={(e) => setTo(e.target.value)}>
           {Object.keys(units).map((u) => <option key={u}>{u}</option>)}
         </select>

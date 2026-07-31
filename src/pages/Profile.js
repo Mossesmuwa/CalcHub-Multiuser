@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import Logo from '../components/Logo';
+import { ArrowLeftIcon } from '../components/Icons';
 import { useToast } from '../contexts/ToastContext';
 
 function Profile({ user }) {
@@ -29,7 +30,7 @@ function Profile({ user }) {
     <div className="app-shell">
       <div className="navbar">
         <Logo />
-        <Link to="/" className="icon-button">←</Link>
+        <Link to="/" className="icon-button"><ArrowLeftIcon /></Link>
       </div>
 
       <div className="card" style={{ padding: 20 }}>
