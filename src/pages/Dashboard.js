@@ -1,48 +1,53 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../supabaseClient';
-import Navbar from '../components/Navbar';
-import Calculator from '../components/Calculator';
-import History from '../components/History';
-import UnitConverter from '../components/UnitConverter';
-import CurrencyConverter from '../components/CurrencyConverter';
+import { useEffect, useState } from "react";
+import { supabase } from "../supabaseClient";
+import Navbar from "../components/Navbar";
+import Calculator from "../components/Calculator";
+import History from "../components/History";
+import UnitConverter from "../components/UnitConverter";
+import CurrencyConverter from "../components/CurrencyConverter";
+import Notes from "../components/Notes";
 
 function Dashboard({ user }) {
-  const [tab, setTab] = useState('history');
+  const [tab, setTab] = useState("history");
   const [refreshKey, setRefreshKey] = useState(0);
-  const [stats, setStats] = useState({ total: 0, mostUsed: '—' });
+  const [stats, setStats] = useState({ total: 0, mostUsed: "—" });
 
   useEffect(() => {
     let cancelled = false;
 
     supabase
-      .from('calculations')
-      .select('expression')
-      .eq('user_id', user.id)
+      .from("calculations")
+      .select("expression")
+      .eq("user_id", user.id)
       .then(({ data }) => {
         if (cancelled || !data) return;
 
-        const opCounts = { '+': 0, '-': 0, '*': 0, '/': 0 };
+        const opCounts = { "+": 0, "-": 0, "*": 0, "/": 0 };
         data.forEach((row) => {
           for (const op of Object.keys(opCounts)) {
             if (row.expression.includes(op)) opCounts[op]++;
           }
         });
-        const mostUsed = Object.entries(opCounts).sort((a, b) => b[1] - a[1])[0];
+        const mostUsed = Object.entries(opCounts).sort(
+          (a, b) => b[1] - a[1],
+        )[0];
 
         setStats({
           total: data.length,
-          mostUsed: mostUsed && mostUsed[1] > 0 ? mostUsed[0] : '—',
+          mostUsed: mostUsed && mostUsed[1] > 0 ? mostUsed[0] : "—",
         });
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user.id, refreshKey]);
 
-  const firstName = user.email.split('@')[0];
+  const firstName = user.email.split("@")[0];
 
   return (
     <div className="app-shell">
-      <Navbar />
+      <Navbar user={user} />
       <p className="welcome-row">Welcome back, {firstName}</p>
 
       <div className="main-grid">
@@ -63,13 +68,30 @@ function Dashboard({ user }) {
           </div>
 
           <div className="tabs" style={{ marginBottom: 16 }}>
-            <button className={`tab ${tab === 'history' ? 'active' : ''}`} onClick={() => setTab('history')}>History</button>
-            <button className={`tab ${tab === 'tools' ? 'active' : ''}`} onClick={() => setTab('tools')}>Tools</button>
+            <button
+              className={`tab ${tab === "history" ? "active" : ""}`}
+              onClick={() => setTab("history")}
+            >
+              History
+            </button>
+            <button
+              className={`tab ${tab === "notes" ? "active" : ""}`}
+              onClick={() => setTab("notes")}
+            >
+              Notes
+            </button>
+            <button
+              className={`tab ${tab === "tools" ? "active" : ""}`}
+              onClick={() => setTab("tools")}
+            >
+              Tools
+            </button>
           </div>
 
-          {tab === 'history' && <History user={user} refreshKey={refreshKey} />}
-          {tab === 'tools' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {tab === "history" && <History user={user} refreshKey={refreshKey} />}
+          {tab === "notes" && <Notes user={user} />}
+          {tab === "tools" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <UnitConverter />
               <CurrencyConverter />
             </div>

@@ -568,3 +568,105 @@ a {
   .auth-card { width: 100%; padding: 32px 24px; }
   .calc-result { font-size: 36px; }
 }
+
+/* ---------- avatar ---------- */
+.avatar-circle {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: var(--glass-strong);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.avatar-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.avatar-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+  font-size: 10px;
+  text-align: center;
+  padding: 4px 0;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.avatar-circle:hover .avatar-overlay { opacity: 1; }
+
+/* ---------- notes ---------- */
+.note-composer {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+  align-items: flex-start;
+}
+.note-composer textarea {
+  flex: 1;
+  resize: vertical;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--glass-strong);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.note-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  background: var(--glass-strong);
+}
+.note-card textarea {
+  width: 100%;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  resize: vertical;
+  min-height: 44px;
+}
+.note-card textarea:focus { outline: none; }
+
+.note-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+.note-footer button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+}
+.note-footer button:hover { color: var(--danger); }
+
+.avatar-nav img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
