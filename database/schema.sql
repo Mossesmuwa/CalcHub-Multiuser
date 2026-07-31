@@ -1,43 +1,58 @@
--- ============================================================
--- DATABASE SETUP FOR THE MULTI-USER CALCULATOR APP
--- ============================================================
--- Run this once inside your Supabase project:
--- Supabase Dashboard -> SQL Editor -> paste this -> Run
--- ============================================================
+-- Run this in Supabase SQL Editor once.
 
--- 1. Create a table to store every calculation a user makes.
--- Supabase Auth already has its own "users" table (auth.users),
--- so we don't need to build our own login table. We just link
--- every row here to the id of the user who created it.
-create table if not exists calculations (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) not null,
-  expression text not null,      -- example: "12 + 4"
-  result text not null,          -- example: "16"
+-- Profile info for each user (name, theme preference)
+create table if not exists profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  display_name text,
+  theme text default 'dark',
   created_at timestamp with time zone default now()
 );
 
--- 2. Turn on Row Level Security (RLS).
--- Without this, ANY logged-in user could read ANY other user's rows.
+alter table profiles enable row level security;
+
+create policy "Users can view their own profile"
+on profiles for select using (auth.uid() = id);
+
+create policy "Users can update their own profile"
+on profiles for update using (auth.uid() = id);
+
+create policy "Users can insert their own profile"
+on profiles for insert with check (auth.uid() = id);
+
+-- Creates a profile row automatically the moment someone signs up
+create function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, display_name)
+  values (new.id, split_part(new.email, '@', 1));
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_auth_user_created
+after insert on auth.users
+for each row execute procedure public.handle_new_user();
+
+-- Calculation history
+create table if not exists calculations (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) not null,
+  expression text not null,
+  result text not null,
+  is_favorite boolean default false,
+  created_at timestamp with time zone default now()
+);
+
 alter table calculations enable row level security;
 
--- 3. Add rules that only let a user see and manage their OWN rows.
-
--- Rule: a user can only SEE calculations where user_id matches their own id.
 create policy "Users can view their own calculations"
-on calculations for select
-using (auth.uid() = user_id);
+on calculations for select using (auth.uid() = user_id);
 
--- Rule: a user can only INSERT a calculation if they attach their own id to it.
 create policy "Users can insert their own calculations"
-on calculations for insert
-with check (auth.uid() = user_id);
+on calculations for insert with check (auth.uid() = user_id);
 
--- Rule: a user can only DELETE their own calculations.
+create policy "Users can update their own calculations"
+on calculations for update using (auth.uid() = user_id);
+
 create policy "Users can delete their own calculations"
-on calculations for delete
-using (auth.uid() = user_id);
-
--- That's it. Because of these policies, even if someone got the
--- database URL and key, they still could not read another user's
--- history — Supabase checks auth.uid() on every request.
+on calculations for delete using (auth.uid() = user_id);
