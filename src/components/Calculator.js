@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../supabaseClient';
-import { BackspaceIcon } from './Icons';
+import { useEffect, useState } from "react";
+import { supabase } from "../supabaseClient";
+import { BackspaceIcon } from "./Icons";
 
 function Calculator({ user, onSaved }) {
-  const [expression, setExpression] = useState('');
-  const [result, setResult] = useState('');
+  const [expression, setExpression] = useState("");
+  const [result, setResult] = useState("");
   const [justCalculated, setJustCalculated] = useState(false);
   const [scientific, setScientific] = useState(false);
   const [memory, setMemory] = useState(0);
@@ -12,19 +12,19 @@ function Calculator({ user, onSaved }) {
   // turns what the user typed into real JS math
   function toJsExpression(expr) {
     return expr
-      .replace(/π/g, 'Math.PI')
-      .replace(/√\(/g, 'Math.sqrt(')
-      .replace(/sin\(/g, 'Math.sin(')
-      .replace(/cos\(/g, 'Math.cos(')
-      .replace(/tan\(/g, 'Math.tan(')
-      .replace(/ln\(/g, 'Math.log(')
-      .replace(/log\(/g, 'Math.log10(')
-      .replace(/\^/g, '**')
-      .replace(/%/g, '/100');
+      .replace(/π/g, "Math.PI")
+      .replace(/√\(/g, "Math.sqrt(")
+      .replace(/sin\(/g, "Math.sin(")
+      .replace(/cos\(/g, "Math.cos(")
+      .replace(/tan\(/g, "Math.tan(")
+      .replace(/ln\(/g, "Math.log(")
+      .replace(/log\(/g, "Math.log10(")
+      .replace(/\^/g, "**")
+      .replace(/%/g, "/100");
   }
 
   function press(value) {
-    if (justCalculated && !'+-*/^'.includes(value)) {
+    if (justCalculated && !"+-*/^".includes(value)) {
       setExpression(value);
     } else if (justCalculated) {
       setExpression(result + value);
@@ -32,12 +32,12 @@ function Calculator({ user, onSaved }) {
       setExpression(expression + value);
     }
     setJustCalculated(false);
-    setResult('');
+    setResult("");
   }
 
   function clearAll() {
-    setExpression('');
-    setResult('');
+    setExpression("");
+    setResult("");
     setJustCalculated(false);
   }
 
@@ -48,22 +48,40 @@ function Calculator({ user, onSaved }) {
   async function calculate() {
     if (!expression) return;
 
-    let value;
-    try {
-      // eslint-disable-next-line no-eval
-      value = eval(toJsExpression(expression));
-      if (!isFinite(value)) throw new Error('bad math');
-      value = Math.round(value * 1e10) / 1e10; // trim floating point noise
-    } catch {
-      setResult('Error');
+    const openParens = (expression.match(/\(/g) || []).length;
+    const closeParens = (expression.match(/\)/g) || []).length;
+    if (openParens !== closeParens) {
+      setResult("Check your parentheses");
       setJustCalculated(true);
       return;
     }
 
+    let value;
+    try {
+      // eslint-disable-next-line no-eval
+      value = eval(toJsExpression(expression));
+    } catch {
+      setResult("That doesn't compute");
+      setJustCalculated(true);
+      return;
+    }
+
+    if (Number.isNaN(value)) {
+      setResult("That doesn't compute");
+      setJustCalculated(true);
+      return;
+    }
+    if (!isFinite(value)) {
+      setResult("Can't divide by zero");
+      setJustCalculated(true);
+      return;
+    }
+
+    value = Math.round(value * 1e10) / 1e10; // trim floating point noise
     setResult(value.toString());
     setJustCalculated(true);
 
-    const { error } = await supabase.from('calculations').insert({
+    const { error } = await supabase.from("calculations").insert({
       user_id: user.id,
       expression,
       result: value.toString(),
@@ -72,8 +90,12 @@ function Calculator({ user, onSaved }) {
   }
 
   // memory buttons
-  function memoryClear() { setMemory(0); }
-  function memoryRecall() { press(memory.toString()); }
+  function memoryClear() {
+    setMemory(0);
+  }
+  function memoryRecall() {
+    press(memory.toString());
+  }
   function memoryAdd() {
     const current = parseFloat(result || expression) || 0;
     setMemory(memory + current);
@@ -87,37 +109,53 @@ function Calculator({ user, onSaved }) {
   useEffect(() => {
     function handleKey(e) {
       if (/[0-9.+\-*/()]/.test(e.key)) press(e.key);
-      else if (e.key === 'Enter') calculate();
-      else if (e.key === 'Backspace') backspace();
-      else if (e.key === 'Escape') clearAll();
+      else if (e.key === "Enter") calculate();
+      else if (e.key === "Backspace") backspace();
+      else if (e.key === "Escape") clearAll();
     }
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
   });
 
   const basicButtons = [
-    ['AC', '(', ')', '/'],
-    ['7', '8', '9', '*'],
-    ['4', '5', '6', '-'],
-    ['1', '2', '3', '+'],
-    ['0', '.', 'back', '='],
+    ["AC", "(", ")", "/"],
+    ["7", "8", "9", "*"],
+    ["4", "5", "6", "-"],
+    ["1", "2", "3", "+"],
+    ["0", ".", "back", "="],
   ];
 
-  const scientificButtons = ['sin(', 'cos(', 'tan(', '√(', 'log(', 'ln(', '^', 'π', '%'];
+  const scientificButtons = [
+    "sin(",
+    "cos(",
+    "tan(",
+    "√(",
+    "log(",
+    "ln(",
+    "^",
+    "π",
+    "%",
+  ];
 
   return (
     <div className="card calculator">
       <div className="calc-screen">
-        <div className="calc-expression">{expression || ' '}</div>
-        <div className="calc-result">{result || expression || '0'}</div>
+        <div className="calc-expression">{expression || " "}</div>
+        <div className="calc-result">{result || expression || "0"}</div>
       </div>
 
       <div className="calc-mode-toggle">
-        <div className="tabs" style={{ width: '100%' }}>
-          <button className={`tab ${!scientific ? 'active' : ''}`} onClick={() => setScientific(false)}>
+        <div className="tabs" style={{ width: "100%" }}>
+          <button
+            className={`tab ${!scientific ? "active" : ""}`}
+            onClick={() => setScientific(false)}
+          >
             Basic
           </button>
-          <button className={`tab ${scientific ? 'active' : ''}`} onClick={() => setScientific(true)}>
+          <button
+            className={`tab ${scientific ? "active" : ""}`}
+            onClick={() => setScientific(true)}
+          >
             Scientific
           </button>
         </div>
@@ -127,33 +165,41 @@ function Calculator({ user, onSaved }) {
         <div className="calc-grid" style={{ marginBottom: 8 }}>
           {scientificButtons.map((b) => (
             <button key={b} className="calc-btn func" onClick={() => press(b)}>
-              {b.replace('(', '')}
+              {b.replace("(", "")}
             </button>
           ))}
-          <button className="calc-btn memory" onClick={memoryClear}>MC</button>
-          <button className="calc-btn memory" onClick={memoryRecall}>MR</button>
-          <button className="calc-btn memory" onClick={memoryAdd}>M+</button>
-          <button className="calc-btn memory" onClick={memorySubtract}>M-</button>
+          <button className="calc-btn memory" onClick={memoryClear}>
+            MC
+          </button>
+          <button className="calc-btn memory" onClick={memoryRecall}>
+            MR
+          </button>
+          <button className="calc-btn memory" onClick={memoryAdd}>
+            M+
+          </button>
+          <button className="calc-btn memory" onClick={memorySubtract}>
+            M-
+          </button>
         </div>
       )}
 
       <div className="calc-grid">
         {basicButtons.flat().map((b, i) => {
-          const isOperator = ['/', '*', '-', '+'].includes(b);
-          const isEquals = b === '=';
+          const isOperator = ["/", "*", "-", "+"].includes(b);
+          const isEquals = b === "=";
           function handleClick() {
-            if (b === 'AC') clearAll();
-            else if (b === 'back') backspace();
-            else if (b === '=') calculate();
+            if (b === "AC") clearAll();
+            else if (b === "back") backspace();
+            else if (b === "=") calculate();
             else press(b);
           }
           return (
             <button
               key={i}
-              className={`calc-btn ${isEquals ? 'equals' : isOperator ? 'operator' : ''}`}
+              className={`calc-btn ${isEquals ? "equals" : isOperator ? "operator" : ""}`}
               onClick={handleClick}
             >
-              {b === 'back' ? <BackspaceIcon /> : b}
+              {b === "back" ? <BackspaceIcon /> : b}
             </button>
           );
         })}

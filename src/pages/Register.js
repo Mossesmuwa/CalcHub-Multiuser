@@ -1,21 +1,31 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
-import Logo from '../components/Logo';
-import GoogleIcon from '../components/GoogleIcon';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "../supabaseClient";
+import Logo from "../components/Logo";
+import GoogleIcon from "../components/GoogleIcon";
+import { EyeIcon, EyeOffIcon } from "../components/Icons";
+import { checkPassword } from "../utils/passwordStrength";
+import { friendlyAuthError } from "../utils/errors";
 
 function Register() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [info, setInfo] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const strength = checkPassword(password);
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError('');
+    setError("");
 
+    if (!strength.isStrong) {
+      setError("Please meet all the password requirements below.");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Passwords don't match.");
       return;
@@ -25,12 +35,12 @@ function Register() {
     const { error } = await supabase.auth.signUp({ email, password });
     setLoading(false);
 
-    if (error) setError(error.message);
-    else setInfo('Account created! Check your email to verify, then log in.');
+    if (error) setError(friendlyAuthError(error.message));
+    else setInfo("Account created! Check your email to verify, then log in.");
   }
 
   async function handleGoogle() {
-    await supabase.auth.signInWithOAuth({ provider: 'google' });
+    await supabase.auth.signInWithOAuth({ provider: "google" });
   }
 
   return (
@@ -52,30 +62,72 @@ function Register() {
         <form onSubmit={handleSubmit}>
           <div className="field">
             <label>Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
-          <div className="field">
+
+          <div className="field password-field">
             <label>Password</label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
             />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+            </button>
           </div>
-          <div className="field">
+
+          {password && (
+            <>
+              <div className="strength-meter">
+                <div
+                  className="strength-meter-fill"
+                  style={{
+                    width: `${strength.percent}%`,
+                    background: strength.color,
+                  }}
+                />
+              </div>
+              <div className="strength-label">{strength.label}</div>
+              <div className="strength-checklist">
+                <span className={strength.checks.length ? "met" : ""}>
+                  8+ characters
+                </span>
+                <span className={strength.checks.upper ? "met" : ""}>
+                  Uppercase letter
+                </span>
+                <span className={strength.checks.lower ? "met" : ""}>
+                  Lowercase letter
+                </span>
+                <span className={strength.checks.number ? "met" : ""}>
+                  Number
+                </span>
+              </div>
+            </>
+          )}
+
+          <div className="field password-field">
             <label>Confirm password</label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              minLength={6}
             />
           </div>
+
           <button className="btn-primary" type="submit" disabled={loading}>
-            {loading ? 'Creating account...' : 'Sign Up'}
+            {loading ? "Creating account..." : "Sign Up"}
           </button>
         </form>
 

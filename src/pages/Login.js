@@ -1,27 +1,33 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
-import Logo from '../components/Logo';
-import GoogleIcon from '../components/GoogleIcon';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "../supabaseClient";
+import Logo from "../components/Logo";
+import GoogleIcon from "../components/GoogleIcon";
+import { EyeIcon, EyeOffIcon } from "../components/Icons";
+import { friendlyAuthError } from "../utils/errors";
 
 function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [info, setInfo] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     setLoading(false);
-    if (error) setError(error.message);
+    if (error) setError(friendlyAuthError(error.message));
   }
 
   async function handleGoogle() {
-    await supabase.auth.signInWithOAuth({ provider: 'google' });
+    await supabase.auth.signInWithOAuth({ provider: "google" });
   }
 
   async function handleForgotPassword() {
@@ -29,12 +35,12 @@ function Login() {
       setError('Type your email above first, then click "Forgot password".');
       return;
     }
-    setError('');
+    setError("");
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/update-password`,
     });
-    if (error) setError(error.message);
-    else setInfo('Reset link sent — check your email.');
+    if (error) setError(friendlyAuthError(error.message));
+    else setInfo("Reset link sent — check your email.");
   }
 
   return (
@@ -56,23 +62,35 @@ function Login() {
         <form onSubmit={handleSubmit}>
           <div className="field">
             <label>Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
-          <div className="field">
+          <div className="field password-field">
             <label>Password</label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+            </button>
           </div>
           <button className="btn-primary" type="submit" disabled={loading}>
-            {loading ? 'Logging in...' : 'Log In'}
+            {loading ? "Logging in..." : "Log In"}
           </button>
         </form>
 
-        <button className="link-button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 13, marginTop: 14 }}>
+        <button className="btn-text" onClick={handleForgotPassword}>
           Forgot password?
         </button>
 

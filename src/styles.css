@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --gradient: linear-gradient(135deg, #7C5CFF 0%, #22D3EE 100%);
-  --primary: #7C5CFF;
-  --accent: #22D3EE;
+  --gradient: linear-gradient(135deg, #FFB648 0%, #FF6B4A 100%);
+  --primary: #FF8A4C;
+  --accent: #2DD4BF;
   --danger: #F87171;
   --success: #34D399;
   --font-display: 'Sora', sans-serif;
@@ -14,23 +14,23 @@
 }
 
 [data-theme='dark'] {
-  --bg: #0A0C13;
-  --blob-1: rgba(124, 92, 255, 0.35);
-  --blob-2: rgba(34, 211, 238, 0.25);
-  --glass: rgba(255, 255, 255, 0.05);
-  --glass-strong: rgba(255, 255, 255, 0.08);
+  --bg: #090B10;
+  --blob-1: rgba(255, 138, 76, 0.22);
+  --blob-2: rgba(45, 212, 191, 0.18);
+  --glass: rgba(255, 255, 255, 0.045);
+  --glass-strong: rgba(255, 255, 255, 0.075);
   --border: rgba(255, 255, 255, 0.09);
   --text: #F2F3F8;
   --text-muted: #8B93A7;
-  --shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
 }
 
 [data-theme='light'] {
-  --bg: #EEF0FA;
-  --blob-1: rgba(124, 92, 255, 0.18);
-  --blob-2: rgba(34, 211, 238, 0.16);
-  --glass: rgba(255, 255, 255, 0.55);
-  --glass-strong: rgba(255, 255, 255, 0.75);
+  --bg: #F4EFEA;
+  --blob-1: rgba(255, 138, 76, 0.16);
+  --blob-2: rgba(45, 212, 191, 0.14);
+  --glass: rgba(255, 255, 255, 0.6);
+  --glass-strong: rgba(255, 255, 255, 0.8);
   --border: rgba(20, 22, 40, 0.08);
   --text: #14161F;
   --text-muted: #6B7185;
@@ -426,7 +426,7 @@ a {
 .calc-btn:hover { background: var(--border); }
 .calc-btn:active { transform: scale(0.94); }
 
-.calc-btn.operator { color: var(--primary); font-weight: 600; }
+.calc-btn.operator { color: var(--accent); font-weight: 600; }
 .calc-btn.equals { background: var(--gradient); color: white; grid-column: span 1; }
 .calc-btn.func { font-size: 14px; color: var(--accent); }
 .calc-btn.memory { font-size: 12px; color: var(--text-muted); }
@@ -670,3 +670,122 @@ a {
   border-radius: 50%;
   object-fit: cover;
 }
+
+/* ---------- password field with show/hide ---------- */
+.password-field {
+  position: relative;
+}
+.password-field input {
+  padding-right: 44px;
+}
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 38px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 0;
+  display: flex;
+}
+.password-toggle:hover { color: var(--text); }
+
+/* ---------- password strength meter ---------- */
+.strength-meter {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+  margin: 8px 0 4px;
+}
+.strength-meter-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.25s ease, background 0.25s ease;
+}
+
+.strength-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.strength-checklist {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.strength-checklist span.met { color: var(--success); }
+
+/* ---------- profile settings ---------- */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+@media (min-width: 800px) {
+  .settings-grid {
+    grid-template-columns: 380px 1fr;
+    align-items: start;
+  }
+}
+
+.settings-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  margin: 0 0 14px;
+  color: var(--text-muted);
+}
+.settings-title.danger-title {
+  color: var(--danger);
+  margin-top: 24px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.settings-row:last-child { border-bottom: none; }
+
+.settings-row-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+.settings-row-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.btn-outline {
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--glass-strong);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+.btn-danger {
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.08);
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.btn-danger:hover { background: rgba(248, 113, 113, 0.16); }
