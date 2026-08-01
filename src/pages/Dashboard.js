@@ -75,6 +75,12 @@ function Dashboard({ user }) {
               History
             </button>
             <button
+              className={`tab ${tab === "favorites" ? "active" : ""}`}
+              onClick={() => setTab("favorites")}
+            >
+              Favorites
+            </button>
+            <button
               className={`tab ${tab === "notes" ? "active" : ""}`}
               onClick={() => setTab("notes")}
             >
@@ -89,6 +95,9 @@ function Dashboard({ user }) {
           </div>
 
           {tab === "history" && <History user={user} refreshKey={refreshKey} />}
+          {tab === "favorites" && (
+            <History user={user} refreshKey={refreshKey} forceFavorites />
+          )}
           {tab === "notes" && <Notes user={user} />}
           {tab === "tools" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>

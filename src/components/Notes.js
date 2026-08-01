@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { TrashIcon } from "./Icons";
+import { NotesSkeleton } from "./Skeleton";
 import { useToast } from "../contexts/ToastContext";
 
 function Notes({ user }) {
@@ -42,22 +43,45 @@ function Notes({ user }) {
     }
   }
 
-  async function updateNote(id, content) {
-    await supabase
+  async function updateNote(id, content, original) {
+    if (content === original) return; // nothing changed, don't bother the database
+
+    const { error } = await supabase
       .from("notes")
       .update({ content, updated_at: new Date().toISOString() })
       .eq("id", id);
+
+    if (error) showToast("Couldn't save note", "error");
+    else showToast("Note saved", "success");
   }
 
   async function deleteNote(id) {
-    const { error } = await supabase.from("notes").delete().eq("id", id);
-    if (!error) {
-      setNotes(notes.filter((n) => n.id !== id));
-      showToast("Note deleted");
-    }
+    const removed = notes.find((n) => n.id === id);
+    setNotes(notes.filter((n) => n.id !== id));
+
+    const timeoutId = setTimeout(async () => {
+      await supabase.from("notes").delete().eq("id", id);
+    }, 5000);
+
+    showToast("Note deleted", "success", {
+      label: "Undo",
+      onClick: () => {
+        clearTimeout(timeoutId);
+        setNotes((current) => [removed, ...current]);
+      },
+    });
   }
 
-  if (loading) return <div className="card empty-state">Loading notes...</div>;
+  if (loading) {
+    return (
+      <div className="card" style={{ padding: 22 }}>
+        <div className="history-header">
+          <h3>Notes</h3>
+        </div>
+        <NotesSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="card" style={{ padding: 22 }}>
@@ -91,11 +115,16 @@ function Notes({ user }) {
             <div className="note-card" key={note.id}>
               <textarea
                 defaultValue={note.content}
-                onBlur={(e) => updateNote(note.id, e.target.value)}
+                onBlur={(e) =>
+                  updateNote(note.id, e.target.value, note.content)
+                }
               />
               <div className="note-footer">
                 <span>{new Date(note.updated_at).toLocaleString()}</span>
-                <button onClick={() => deleteNote(note.id)}>
+                <button
+                  onClick={() => deleteNote(note.id)}
+                  aria-label="Delete note"
+                >
                   <TrashIcon size={14} />
                 </button>
               </div>

@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import Logo from "../components/Logo";
 import GoogleIcon from "../components/GoogleIcon";
-import { EyeIcon, EyeOffIcon } from "../components/Icons";
+import { EyeIcon, EyeOffIcon, CheckIcon, AlertIcon } from "../components/Icons";
 import { checkPassword } from "../utils/passwordStrength";
 import { friendlyAuthError } from "../utils/errors";
+import { isValidEmail } from "../utils/validate";
 
 function Register() {
   const [email, setEmail] = useState("");
@@ -15,13 +16,22 @@ function Register() {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const strength = checkPassword(password);
+  const passwordsMatch =
+    confirmPassword.length > 0 && confirmPassword === password;
+  const passwordsMismatch =
+    confirmPassword.length > 0 && confirmPassword !== password;
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
 
+    if (!isValidEmail(email)) {
+      setError("That email address looks incomplete.");
+      return;
+    }
     if (!strength.isStrong) {
       setError("Please meet all the password requirements below.");
       return;
@@ -40,6 +50,7 @@ function Register() {
   }
 
   async function handleGoogle() {
+    setGoogleLoading(true);
     await supabase.auth.signInWithOAuth({ provider: "google" });
   }
 
@@ -53,8 +64,13 @@ function Register() {
         {error && <div className="form-error">{error}</div>}
         {info && <div className="form-success">{info}</div>}
 
-        <button className="btn-google" onClick={handleGoogle}>
-          <GoogleIcon /> Continue with Google
+        <button
+          className="btn-google"
+          onClick={handleGoogle}
+          disabled={googleLoading}
+        >
+          <GoogleIcon />{" "}
+          {googleLoading ? "Redirecting..." : "Continue with Google"}
         </button>
 
         <div className="divider">or</div>
@@ -64,6 +80,7 @@ function Register() {
             <label>Email</label>
             <input
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -74,6 +91,7 @@ function Register() {
             <label>Password</label>
             <input
               type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -82,6 +100,7 @@ function Register() {
               type="button"
               className="password-toggle"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
             </button>
@@ -120,13 +139,31 @@ function Register() {
             <label>Confirm password</label>
             <input
               type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
           </div>
 
-          <button className="btn-primary" type="submit" disabled={loading}>
+          {confirmPassword && (
+            <div
+              className={`match-indicator ${passwordsMatch ? "match-ok" : "match-bad"}`}
+            >
+              {passwordsMatch ? (
+                <CheckIcon size={14} />
+              ) : (
+                <AlertIcon size={14} />
+              )}
+              {passwordsMatch ? "Passwords match" : "Passwords don't match yet"}
+            </div>
+          )}
+
+          <button
+            className="btn-primary"
+            type="submit"
+            disabled={loading || passwordsMismatch}
+          >
             {loading ? "Creating account..." : "Sign Up"}
           </button>
         </form>

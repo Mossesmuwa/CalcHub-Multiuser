@@ -1,9 +1,9 @@
 {
   "short_name": "CalcHub",
   "name": "CalcHub - Calculator with History",
-  "icons": [],
+  "icons": [{ "src": "favicon.svg", "type": "image/svg+xml", "sizes": "any" }],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#0B0D14",
-  "background_color": "#0B0D14"
+  "theme_color": "#090B10",
+  "background_color": "#090B10"
 }

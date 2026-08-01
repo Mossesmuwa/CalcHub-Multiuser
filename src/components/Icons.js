@@ -136,3 +136,44 @@ export function EyeOffIcon({ size = 18 }) {
     size,
   );
 }
+
+export function CheckIcon({ size = 16 }) {
+  return base(<path d="M4 12l5 5L20 6" />, size);
+}
+
+export function AlertIcon({ size = 16 }) {
+  return base(
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 8v5" />
+      <circle cx="12" cy="16" r="0.5" fill="currentColor" />
+    </>,
+    size,
+  );
+}
+
+export function InfoIcon({ size = 16 }) {
+  return base(
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5" />
+      <circle cx="12" cy="8" r="0.5" fill="currentColor" />
+    </>,
+    size,
+  );
+}
+
+export function ClearIcon({ size = 14 }) {
+  return base(<path d="M18 6L6 18M6 6l12 12" />, size);
+}
+
+export function DownloadIcon({ size = 16 }) {
+  return base(
+    <>
+      <path d="M12 3v12" />
+      <path d="M7 10l5 5 5-5" />
+      <path d="M5 20h14" />
+    </>,
+    size,
+  );
+}

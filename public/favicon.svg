@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <defs>
+    <linearGradient id="g" x1="2" y1="2" x2="38" y2="38" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFC469" />
+      <stop offset="1" stop-color="#FF6B4A" />
+    </linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="18" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.35" />
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <rect width="40" height="40" rx="11" fill="url(#g)" />
+  <rect width="40" height="18" rx="11" fill="url(#sheen)" />
+
+  <!-- hub: a center node linked to four points, like a small calculation network -->
+  <g stroke="white" stroke-width="1.6" stroke-linecap="round" opacity="0.9">
+    <path d="M20 20L12 12M20 20L28 12M20 20L12 28M20 20L28 28" />
+  </g>
+  <circle cx="20" cy="20" r="4.4" fill="white" />
+  <circle cx="12" cy="12" r="2.4" fill="white" />
+  <circle cx="28" cy="12" r="2.4" fill="white" />
+  <circle cx="12" cy="28" r="2.4" fill="white" />
+  <circle cx="28" cy="28" r="2.4" fill="white" />
+
+  <!-- small equals mark inside the center node, ties it back to "calc" -->
+  <path d="M18.3 19.1h3.4M18.3 20.9h3.4" stroke="#FF6B4A" stroke-width="1" stroke-linecap="round" />
+</svg>

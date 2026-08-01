@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
+import { evaluateExpression } from "../utils/mathEngine";
 import { BackspaceIcon } from "./Icons";
 
 function Calculator({ user, onSaved }) {
@@ -8,29 +9,24 @@ function Calculator({ user, onSaved }) {
   const [justCalculated, setJustCalculated] = useState(false);
   const [scientific, setScientific] = useState(false);
   const [memory, setMemory] = useState(0);
-
-  // turns what the user typed into real JS math
-  function toJsExpression(expr) {
-    return expr
-      .replace(/π/g, "Math.PI")
-      .replace(/√\(/g, "Math.sqrt(")
-      .replace(/sin\(/g, "Math.sin(")
-      .replace(/cos\(/g, "Math.cos(")
-      .replace(/tan\(/g, "Math.tan(")
-      .replace(/ln\(/g, "Math.log(")
-      .replace(/log\(/g, "Math.log10(")
-      .replace(/\^/g, "**")
-      .replace(/%/g, "/100");
-  }
+  const [angleMode, setAngleMode] = useState("deg");
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   function press(value) {
-    if (justCalculated && !"+-*/^".includes(value)) {
-      setExpression(value);
-    } else if (justCalculated) {
-      setExpression(result + value);
-    } else {
-      setExpression(expression + value);
+    const base =
+      justCalculated && !"+-*/^".includes(value)
+        ? ""
+        : justCalculated
+          ? result
+          : expression;
+
+    // stop a second decimal point landing in the same number
+    if (value === ".") {
+      const currentNumber = base.match(/[0-9.]*$/)[0];
+      if (currentNumber.includes(".")) return;
     }
+
+    setExpression(base + value);
     setJustCalculated(false);
     setResult("");
   }
@@ -48,43 +44,24 @@ function Calculator({ user, onSaved }) {
   async function calculate() {
     if (!expression) return;
 
-    const openParens = (expression.match(/\(/g) || []).length;
-    const closeParens = (expression.match(/\)/g) || []).length;
-    if (openParens !== closeParens) {
-      setResult("Check your parentheses");
+    const { value, error: mathError } = evaluateExpression(
+      expression,
+      angleMode,
+    );
+
+    if (mathError) {
+      setResult(mathError);
       setJustCalculated(true);
       return;
     }
 
-    let value;
-    try {
-      // eslint-disable-next-line no-eval
-      value = eval(toJsExpression(expression));
-    } catch {
-      setResult("That doesn't compute");
-      setJustCalculated(true);
-      return;
-    }
-
-    if (Number.isNaN(value)) {
-      setResult("That doesn't compute");
-      setJustCalculated(true);
-      return;
-    }
-    if (!isFinite(value)) {
-      setResult("Can't divide by zero");
-      setJustCalculated(true);
-      return;
-    }
-
-    value = Math.round(value * 1e10) / 1e10; // trim floating point noise
-    setResult(value.toString());
+    setResult(value);
     setJustCalculated(true);
 
     const { error } = await supabase.from("calculations").insert({
       user_id: user.id,
       expression,
-      result: value.toString(),
+      result: value,
     });
     if (!error) onSaved();
   }
@@ -139,9 +116,49 @@ function Calculator({ user, onSaved }) {
 
   return (
     <div className="card calculator">
+      <div className="calc-top-row">
+        {scientific && (
+          <button
+            className="angle-toggle"
+            onClick={() => setAngleMode(angleMode === "deg" ? "rad" : "deg")}
+          >
+            {angleMode.toUpperCase()}
+          </button>
+        )}
+        <button
+          className="shortcuts-toggle"
+          onClick={() => setShowShortcuts(!showShortcuts)}
+          aria-label="Keyboard shortcuts"
+        >
+          ?
+        </button>
+      </div>
+
+      {showShortcuts && (
+        <div className="shortcuts-panel">
+          <div>
+            <kbd>0-9</kbd> numbers
+          </div>
+          <div>
+            <kbd>+ - * /</kbd> operators
+          </div>
+          <div>
+            <kbd>Enter</kbd> calculate
+          </div>
+          <div>
+            <kbd>Backspace</kbd> delete
+          </div>
+          <div>
+            <kbd>Esc</kbd> clear all
+          </div>
+        </div>
+      )}
+
       <div className="calc-screen">
         <div className="calc-expression">{expression || " "}</div>
-        <div className="calc-result">{result || expression || "0"}</div>
+        <div className="calc-result" key={result || expression}>
+          {result || expression || "0"}
+        </div>
       </div>
 
       <div className="calc-mode-toggle">
@@ -162,7 +179,10 @@ function Calculator({ user, onSaved }) {
       </div>
 
       {scientific && (
-        <div className="calc-grid" style={{ marginBottom: 8 }}>
+        <div
+          className="calc-grid calc-scientific-panel"
+          style={{ marginBottom: 8 }}
+        >
           {scientificButtons.map((b) => (
             <button key={b} className="calc-btn func" onClick={() => press(b)}>
               {b.replace("(", "")}

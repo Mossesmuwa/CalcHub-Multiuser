@@ -5,6 +5,7 @@ import Logo from "../components/Logo";
 import GoogleIcon from "../components/GoogleIcon";
 import { EyeIcon, EyeOffIcon } from "../components/Icons";
 import { friendlyAuthError } from "../utils/errors";
+import { isValidEmail } from "../utils/validate";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -13,10 +14,18 @@ function Login() {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    setInfo("");
+
+    if (!isValidEmail(email)) {
+      setError("That email address looks incomplete.");
+      return;
+    }
+
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -27,15 +36,17 @@ function Login() {
   }
 
   async function handleGoogle() {
+    setGoogleLoading(true);
     await supabase.auth.signInWithOAuth({ provider: "google" });
   }
 
   async function handleForgotPassword() {
-    if (!email) {
-      setError('Type your email above first, then click "Forgot password".');
+    setError("");
+    setInfo("");
+    if (!isValidEmail(email)) {
+      setError('Type a valid email above first, then click "Forgot password".');
       return;
     }
-    setError("");
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/update-password`,
     });
@@ -50,11 +61,25 @@ function Login() {
         <h1>Welcome back</h1>
         <p className="subtitle">Log in to keep using your calculator</p>
 
-        {error && <div className="form-error">{error}</div>}
+        {error && (
+          <div className="form-error">
+            {error}
+            {error.includes("incorrect") && (
+              <div className="form-error-hint">
+                For your security, we don't say which one it is.
+              </div>
+            )}
+          </div>
+        )}
         {info && <div className="form-success">{info}</div>}
 
-        <button className="btn-google" onClick={handleGoogle}>
-          <GoogleIcon /> Continue with Google
+        <button
+          className="btn-google"
+          onClick={handleGoogle}
+          disabled={googleLoading}
+        >
+          <GoogleIcon />{" "}
+          {googleLoading ? "Redirecting..." : "Continue with Google"}
         </button>
 
         <div className="divider">or</div>
@@ -64,6 +89,7 @@ function Login() {
             <label>Email</label>
             <input
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -73,6 +99,7 @@ function Login() {
             <label>Password</label>
             <input
               type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -81,6 +108,7 @@ function Login() {
               type="button"
               className="password-toggle"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
             </button>

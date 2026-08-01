@@ -55,26 +55,15 @@ body {
   overflow-x: hidden;
 }
 
-/* soft blurred color blobs behind everything, for depth */
-body::before,
-body::after {
+/* soft ambient color wash across the page, not two corner spotlights */
+body::before {
   content: '';
   position: fixed;
-  width: 480px;
-  height: 480px;
-  border-radius: 50%;
-  filter: blur(110px);
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, var(--blob-1), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, var(--blob-2), transparent 60%);
   z-index: -1;
-}
-body::before {
-  background: var(--blob-1);
-  top: -160px;
-  left: -140px;
-}
-body::after {
-  background: var(--blob-2);
-  bottom: -180px;
-  right: -160px;
 }
 
 button {
@@ -98,6 +87,11 @@ a {
 }
 
 /* ---------- glass card ---------- */
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .card {
   background: var(--glass);
   backdrop-filter: blur(24px);
@@ -105,6 +99,7 @@ a {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
+  animation: card-in 0.3s ease;
 }
 
 /* ---------- logo ---------- */
@@ -241,6 +236,21 @@ a {
   font-size: 13px;
   margin-bottom: 16px;
 }
+.form-error-hint {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.match-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin: -6px 0 14px;
+}
+.match-indicator.match-ok { color: var(--success); }
+.match-indicator.match-bad { color: var(--text-muted); }
 
 .form-success {
   background: rgba(52, 211, 153, 0.12);
@@ -311,10 +321,13 @@ a {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 5px;
+  overflow-x: auto;
 }
 
 .tab {
   flex: 1;
+  min-width: 72px;
+  white-space: nowrap;
   text-align: center;
   padding: 11px;
   border-radius: var(--radius-sm);
@@ -323,6 +336,7 @@ a {
   color: var(--text-muted);
   font-size: 13px;
   font-weight: 600;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 .tab.active {
   background: var(--gradient);
@@ -401,6 +415,22 @@ a {
   font-weight: 700;
   word-break: break-all;
   line-height: 1.1;
+  animation: result-in 0.2s ease;
+}
+
+@keyframes result-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes panel-expand {
+  from { opacity: 0; transform: translateY(-6px); max-height: 0; }
+  to { opacity: 1; transform: translateY(0); max-height: 200px; }
+}
+
+.calc-scientific-panel {
+  animation: panel-expand 0.2s ease;
+  overflow: hidden;
 }
 
 .calc-grid {
@@ -427,7 +457,16 @@ a {
 .calc-btn:active { transform: scale(0.94); }
 
 .calc-btn.operator { color: var(--accent); font-weight: 600; }
-.calc-btn.equals { background: var(--gradient); color: white; grid-column: span 1; }
+.calc-btn.equals {
+  background: var(--gradient);
+  color: white;
+  grid-column: span 1;
+  box-shadow: 0 4px 18px rgba(255, 107, 74, 0.35);
+}
+.calc-btn.equals:active {
+  transform: scale(0.94);
+  box-shadow: 0 2px 30px rgba(255, 107, 74, 0.55);
+}
 .calc-btn.func { font-size: 14px; color: var(--accent); }
 .calc-btn.memory { font-size: 12px; color: var(--text-muted); }
 
@@ -457,13 +496,24 @@ a {
 }
 .search-box input {
   width: 100%;
-  padding: 12px 14px 12px 40px;
+  padding: 12px 40px 12px 40px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--glass-strong);
   color: var(--text);
   font-size: 13px;
 }
+.search-clear {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  display: flex;
+}
+.search-clear:hover { color: var(--text); }
 
 .history-list {
   max-height: 480px;
@@ -507,11 +557,15 @@ a {
 }
 
 /* ---------- toast ---------- */
+@keyframes toast-in {
+  from { transform: translate(-50%, 12px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}
+
 .toast {
   position: fixed;
   bottom: 28px;
   left: 50%;
-  transform: translateX(-50%);
   background: var(--glass-strong);
   backdrop-filter: blur(20px);
   border: 1px solid var(--border);
@@ -520,7 +574,25 @@ a {
   border-radius: var(--radius-md);
   font-size: 13px;
   z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: toast-in 0.25s ease;
 }
+.toast-success { color: var(--success); }
+.toast-error { color: var(--danger); }
+.toast-info { color: var(--accent); }
+.toast span { color: var(--text); }
+.toast-action {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 13px;
+  margin-left: 4px;
+  padding: 0;
+}
+.toast-action:hover { text-decoration: underline; }
 
 /* ---------- converters ---------- */
 .converter-card { padding: 22px; }
@@ -789,3 +861,56 @@ a {
   white-space: nowrap;
 }
 .btn-danger:hover { background: rgba(248, 113, 113, 0.16); }
+
+/* ---------- calculator top row: angle mode + shortcuts help ---------- */
+.calc-top-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.angle-toggle {
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--glass-strong);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.shortcuts-toggle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--glass-strong);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.shortcuts-toggle:hover { color: var(--text); }
+
+.shortcuts-panel {
+  background: var(--glass-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: panel-expand 0.2s ease;
+}
+.shortcuts-panel kbd {
+  background: var(--border);
+  color: var(--text);
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  margin-right: 6px;
+}

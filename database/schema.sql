@@ -157,3 +157,26 @@ on notes for update using (auth.uid() = user_id);
 
 create policy "Users can delete their own notes"
 on notes for delete using (auth.uid() = user_id);
+
+-- Run this in the Supabase SQL Editor, same as the other schema files.
+-- No CLI needed - this replaces the Edge Function approach with a database function instead.
+
+create or replace function delete_own_account()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  -- security definer means this runs with elevated privileges, which is the
+  -- only reason it's allowed to touch auth.users at all. auth.uid() always
+  -- refers to whoever is calling it, so a user can only ever delete themselves.
+  delete from public.calculations where user_id = auth.uid();
+  delete from public.notes where user_id = auth.uid();
+  delete from public.profiles where id = auth.uid();
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+
+-- lets any logged-in user call it (but only on their own account, per above)
+grant execute on function delete_own_account() to authenticated;

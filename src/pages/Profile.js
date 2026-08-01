@@ -18,7 +18,7 @@ function Profile({ user }) {
       .from("profiles")
       .select("display_name, avatar_url")
       .eq("id", user.id)
-      .single()
+      .maybeSingle()
       .then(({ data }) => {
         if (data) {
           setDisplayName(data.display_name || "");
@@ -32,7 +32,7 @@ function Profile({ user }) {
       .from("profiles")
       .update({ display_name: displayName })
       .eq("id", user.id);
-    if (!error) showToast("Profile updated");
+    if (!error) showToast("Profile updated", "success");
   }
 
   async function handlePictureChange(e) {
@@ -41,11 +41,11 @@ function Profile({ user }) {
 
     const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      showToast("Please choose a PNG, JPG, or WEBP image");
+      showToast("Please choose a PNG, JPG, or WEBP image", "error");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      showToast("Image must be under 2MB");
+      showToast("Image must be under 2MB", "error");
       return;
     }
 
@@ -57,7 +57,7 @@ function Profile({ user }) {
       .upload(path, file, { upsert: true });
 
     if (uploadError) {
-      showToast("Couldn't upload — please try again");
+      showToast("Couldn't upload — please try again", "error");
       setUploading(false);
       return;
     }
@@ -71,7 +71,8 @@ function Profile({ user }) {
       .eq("id", user.id);
     setAvatarUrl(url);
     setUploading(false);
-    showToast("Picture updated");
+    showToast("Picture updated", "success");
+    window.dispatchEvent(new Event("avatar-changed"));
   }
 
   async function clearHistory() {
@@ -85,7 +86,7 @@ function Profile({ user }) {
       .from("calculations")
       .delete()
       .eq("user_id", user.id);
-    if (!error) showToast("History cleared");
+    if (!error) showToast("History cleared", "success");
   }
 
   async function removeAllFavorites() {
@@ -95,7 +96,7 @@ function Profile({ user }) {
       .update({ is_favorite: false })
       .eq("user_id", user.id)
       .eq("is_favorite", true);
-    if (!error) showToast("Favorites cleared");
+    if (!error) showToast("Favorites cleared", "success");
   }
 
   async function clearNotes() {
@@ -104,7 +105,7 @@ function Profile({ user }) {
       .from("notes")
       .delete()
       .eq("user_id", user.id);
-    if (!error) showToast("Notes cleared");
+    if (!error) showToast("Notes cleared", "success");
   }
 
   async function removeAvatar() {
@@ -114,7 +115,8 @@ function Profile({ user }) {
       .update({ avatar_url: null })
       .eq("id", user.id);
     setAvatarUrl("");
-    showToast("Picture removed");
+    showToast("Picture removed", "success");
+    window.dispatchEvent(new Event("avatar-changed"));
   }
 
   async function handleDeleteAccount() {
@@ -123,10 +125,13 @@ function Profile({ user }) {
     );
     if (!confirmed) return;
 
-    // Removes their data; the auth account itself needs an admin key to delete,
-    // so this signs them out after wiping everything tied to their account.
-    await supabase.from("calculations").delete().eq("user_id", user.id);
-    await supabase.from("notes").delete().eq("user_id", user.id);
+    const { error } = await supabase.rpc("delete_own_account");
+
+    if (error) {
+      showToast("Couldn't delete account — please try again", "error");
+      return;
+    }
+
     await supabase.auth.signOut();
     navigate("/login");
   }

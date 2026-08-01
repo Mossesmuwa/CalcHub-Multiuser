@@ -2,18 +2,24 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import Logo from "../components/Logo";
-import { EyeIcon, EyeOffIcon } from "../components/Icons";
+import { EyeIcon, EyeOffIcon, CheckIcon, AlertIcon } from "../components/Icons";
 import { checkPassword } from "../utils/passwordStrength";
 import { friendlyAuthError } from "../utils/errors";
 
 function UpdatePassword() {
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const strength = checkPassword(password);
+  const passwordsMatch =
+    confirmPassword.length > 0 && confirmPassword === password;
+  const passwordsMismatch =
+    confirmPassword.length > 0 && confirmPassword !== password;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -23,8 +29,15 @@ function UpdatePassword() {
       setError("Please meet all the password requirements below.");
       return;
     }
+    if (password !== confirmPassword) {
+      setError("Passwords don't match.");
+      return;
+    }
 
+    setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+
     if (error) setError(friendlyAuthError(error.message));
     else setDone(true);
   }
@@ -51,6 +64,7 @@ function UpdatePassword() {
               <label>New password</label>
               <input
                 type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -59,6 +73,7 @@ function UpdatePassword() {
                 type="button"
                 className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
                   <EyeOffIcon size={18} />
@@ -97,8 +112,38 @@ function UpdatePassword() {
               </>
             )}
 
-            <button className="btn-primary" type="submit">
-              Update Password
+            <div className="field password-field">
+              <label>Confirm new password</label>
+              <input
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            {confirmPassword && (
+              <div
+                className={`match-indicator ${passwordsMatch ? "match-ok" : "match-bad"}`}
+              >
+                {passwordsMatch ? (
+                  <CheckIcon size={14} />
+                ) : (
+                  <AlertIcon size={14} />
+                )}
+                {passwordsMatch
+                  ? "Passwords match"
+                  : "Passwords don't match yet"}
+              </div>
+            )}
+
+            <button
+              className="btn-primary"
+              type="submit"
+              disabled={loading || passwordsMismatch}
+            >
+              {loading ? "Updating..." : "Update Password"}
             </button>
           </form>
         )}
