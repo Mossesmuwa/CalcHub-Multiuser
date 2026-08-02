@@ -4,8 +4,6 @@ A calculator that remembers. Every user gets their own account, their own calcul
 
 This document explains what CalcHub is, how it works, and how to run it — written for anyone opening this project for the first time, not just its author.
 
-Live app: add your Vercel URL here
-Repo: Mossesmuwa/CalcHub-Multiuser
 
 ---
 
@@ -124,8 +122,7 @@ calchub/
 │   ├── schema.sql               # core tables + RLS policies
 │   ├── schema-updates.sql       # avatar column, storage bucket, notes table
 │   └── schema-updates-2.sql     # upload size/type limit at the database level
-├── email-templates/
-│   └── reset-password.html      # paste into Supabase's email template settings
+│   
 ├── public/
 │   ├── index.html
 │   ├── favicon.svg               # the hub-node icon
@@ -145,24 +142,4 @@ calchub/
 └── .env.example
 ```
 
----
-
-## Design system
-
-| | |
-|---|---|
-| Primary gradient | `#FFB648` to `#FF6B4A` (gold to orange) |
-| Accent | `#2DD4BF` (teal) |
-| Background, dark | `#090B10` |
-| Background, light | `#F4EFEA` |
-| Card surface | translucent glass with `backdrop-filter: blur()`, not a flat fill |
-| Text, dark mode | `#F2F3F8` primary / `#8B93A7` muted |
-| Text, light mode | `#14161F` primary / `#6B7185` muted |
-| Success / Error | `#34D399` / `#F87171` |
-| Fonts | Sora (headings, logo, numbers), Inter (everything else) |
-| Corners | very rounded — 24px cards, 16px tabs, 12px buttons/inputs |
-| Shadows | soft, large blur, low opacity |
-| Icon/logo | a center "hub" node linked to four points with a small equals mark, on a gradient badge — represents both halves of "CalcHub" instead of a generic calculator grid |
-
----
 
